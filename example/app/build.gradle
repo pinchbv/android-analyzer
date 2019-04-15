@@ -1,0 +1,64 @@
+apply plugin: "com.android.application"
+apply plugin: "kotlin-android"
+apply plugin: "kotlin-android-extensions"
+apply plugin: "com.justpinch.androidanalyzer"
+apply plugin: "io.gitlab.arturbosch.detekt"
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.konarskirob.androidsonar"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 3
+        versionName "1.0.2"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    testOptions {
+        unitTests.returnDefaultValues = true
+        unitTests.includeAndroidResources = true
+        unitTests.all {
+            jacoco {
+                includeNoLocationClasses = true
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "androidx.appcompat:appcompat:1.0.2"
+
+    implementation "androidx.lifecycle:lifecycle-runtime:2.0.0"
+    implementation "androidx.lifecycle:lifecycle-extensions:2.0.0"
+
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.robolectric:robolectric:4.2"
+
+    testImplementation "androidx.test:core:1.1.0"
+    testImplementation "androidx.test:runner:1.1.1"
+    testImplementation "androidx.test.ext:junit:1.1.0"
+    testImplementation "androidx.test.ext:truth:1.1.0"
+    testImplementation "androidx.test.espresso:espresso-core:3.1.1"
+    testImplementation "androidx.test.espresso:espresso-intents:3.1.1"
+}
+
+androidAnalyzer {
+    applicationId = "com.konarskirob.androidsonar"
+    projectName = "Android Analyzer Example App"
+    projectVersion = "1.1.0"
+    unitTestCoverage = true
+    detekt = true
+    packageName = "com.konarskirob.androidsonar"
+    buildFlavor = "debug"
+}
