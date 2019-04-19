@@ -78,9 +78,17 @@ of your application.
 
 -----------------------------------------------------------
 
-CLI command to run the plugin:
+CLI command to run the plugin (single-module project):
 ```
 ./gradlew androidAnalyzer
+```
+
+CLI command to run the plugin (multi-module project):
+```
+// when running the plugin in multi-module environment, make sure to analyze each module separately
+./gradlew app:androidAnalyzer
+./gradlew core:androidAnalyzer
+./gradlew feature:androidAnalyzer
 ```
 
 CLI command to get a list of default exclusions:
