@@ -22,7 +22,7 @@ and abstracts away the complexity of setting up the two systems manually.
 
 ## Limitations
 
-- Gradle 4.10+
+- Gradle 4.10.1+
 - No support for Instrumented test coverage
 - In multi-module projects, each module is treated as a separate Sonarqube project 
 
