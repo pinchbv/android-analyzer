@@ -147,6 +147,11 @@ android {
 }
 ```
 
+And the following line to your `gradle.properties` file:
+```
+android.enableUnitTestBinaryResources=true
+```
+
 *NOTE*: this might not be the only configuration needed for Robolectric and would depend on its version as well as the apps sdk level, and whether you are using androidx tests.
 For more information on the subject, check the example project or follow Robolectric setup guides. 
 
