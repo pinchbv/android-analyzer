@@ -10,8 +10,8 @@ android {
         applicationId "com.konarskirob.androidsonar"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 3
-        versionName "1.0.2"
+        versionCode 4
+        versionName "1.0.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     testOptions {
@@ -56,9 +56,9 @@ dependencies {
 androidAnalyzer {
     applicationId = "com.konarskirob.androidsonar"
     projectName = "Android Analyzer Example App"
-    projectVersion = "1.1.0"
+    projectVersion = "1.1.1"
     unitTestCoverage = true
     detekt = true
     packageName = "com.konarskirob.androidsonar"
-    buildFlavor = "debug"
+    buildVariant = "debug"
 }
