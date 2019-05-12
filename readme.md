@@ -45,7 +45,7 @@ allprojects {
     }
     dependencies {
         ..
-        classpath "com.justpinch:androidanalyzer:1.1.0"
+        classpath "com.justpinch:androidanalyzer:1.1.1"
     }
 }
 ```
@@ -61,14 +61,14 @@ androidAnalyzer {
     detekt = true
     unitTestCoverage = true
     packageName = 'com.konarskirob.androidsonar'
-    buildFlavor = 'debug'
+    buildVariant = 'debug'
 }
 ```
 
 -----------------------------------------------------------
 
 If your project does not contain any unit tests, then you should not set `unitTestCoverage`, `packageName` 
-and `buildFlavor` properties.
+and `buildVariant` properties.
 
 -----------------------------------------------------------
 
@@ -114,9 +114,9 @@ Below is a list of available properties with corresponding descriptions.
 | detekt                | Boolean       | false                   | Toggle Kotlin code analysis with Detekt. This will generate a configuration file and place it in the application directory. To see how a default configuration file looks like, run `./gradlew androidAnalyzerDefaultDetektConfig`. |
 | detektConfigFileName  | String        | detekt-config.yml       | Detekt configuration file name. |
 | detektBaseline        | String        | null                    | Path to detekt baseline file. For more information, please visit documentation of detekt. |
-| unitTestCoverage      | Boolean       | false                   | Toggle unit test coverage reports by Jacoco. If enabled, `packageName` and `buildFlavor` must be specified too. |
+| unitTestCoverage      | Boolean       | false                   | Toggle unit test coverage reports by Jacoco. If enabled, `packageName` and `buildVariant` must be specified too. |
 | packageName           | String        | null                    | Package name of your Android project. Must match your folder structure, e.g. `nl.pinch.appname`. |
-| buildFlavor           | String        | null                    | Flavor for running unit tests and generating code coverage reports. |
+| buildVariant          | String        | null                    | Variant for running unit tests and generating code coverage reports. |
 | serverUrl             | String        | http://localhost:9000   | URL of Sonarqube server. |
 | useDefaultExclusions  | Boolean       | true                    | Toggle default exclusions from analysis and coverage reports. To get a list of default exclusions, call Gradle task `androidAnalyzerDefaultExclusions`. |
 | customExclusions      | Array(String) | emptyList(String)       | Provide a list of custom exclusions from analysis and coverage reports. |
@@ -159,6 +159,10 @@ The less secure way is using the Gradle extension. See `sonarqubeUsername` and `
 
 ## Changelog
 
+#### Version 1.1.1 - May 12, 2019
+Renamed confusing `buildFlavor` parameter to a more correct `buildVariant`.
+
+-----------------------------------------------------------
 #### Version 1.1.0 - April 6, 2019
 Detekt integration for advanced Kotlin code analysis.
 

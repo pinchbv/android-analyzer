@@ -47,13 +47,13 @@ open class Params {
     var unitTestCoverage = Default.unitTestCoverage
     val testCoveragePlugin = Default.testCoveragePlugin
 
-    var buildFlavor: String? = null
+    var buildVariant: String? = null
 
     val projectKey: String
         get() = "$applicationId-android"
 
     val testBuildFlavor: String
-        get() = "test${buildFlavor?.capitalize()}UnitTest"
+        get() = "test${buildVariant?.capitalize()}UnitTest"
 
     val testJacocoReportsPath: String
         get() = "build/jacoco/$testBuildFlavor.exec"
@@ -67,10 +67,10 @@ open class Params {
         get() = (packageName ?: "").replace(".", "/")
 
     val javaClassDirs: String
-        get() = "build/intermediates/javac/$buildFlavor/compileDebugJavaWithJavac/classes/$packageDirs"
+        get() = "build/intermediates/javac/$buildVariant/compileDebugJavaWithJavac/classes/$packageDirs"
 
     val kotlinClassDirs: String
-        get() = "build/tmp/kotlin-classes/$buildFlavor/$packageDirs"
+        get() = "build/tmp/kotlin-classes/$buildVariant/$packageDirs"
 
     val sourceDirs: String
         get() = "src/main/java/$packageDirs"
@@ -89,8 +89,8 @@ open class Params {
         }
 
         if (unitTestCoverage) {
-            if (buildFlavor == null) {
-                fail("AndroidAnalyzer: buildFlavor must be specified when unitTestCoverage = true")
+            if (buildVariant == null) {
+                fail("AndroidAnalyzer: buildVariant must be specified when unitTestCoverage = true")
             }
 
             if (packageName == null) {
