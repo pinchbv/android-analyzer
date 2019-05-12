@@ -22,7 +22,7 @@ and abstracts away the complexity of setting up the two systems manually.
 
 ## Limitations
 
-- Gradle 4.10+
+- Gradle 4.10.1+
 - No support for Instrumented test coverage
 - In multi-module projects, each module is treated as a separate Sonarqube project 
 
@@ -78,9 +78,17 @@ of your application.
 
 -----------------------------------------------------------
 
-CLI command to run the plugin:
+CLI command to run the plugin (single-module project):
 ```
 ./gradlew androidAnalyzer
+```
+
+CLI command to run the plugin (multi-module project):
+```
+// when running the plugin in multi-module environment, make sure to analyze each module separately
+./gradlew app:androidAnalyzer
+./gradlew core:androidAnalyzer
+./gradlew feature:androidAnalyzer
 ```
 
 CLI command to get a list of default exclusions:
@@ -137,6 +145,11 @@ android {
         }
     }
 }
+```
+
+And the following line to your `gradle.properties` file:
+```
+android.enableUnitTestBinaryResources=true
 ```
 
 *NOTE*: this might not be the only configuration needed for Robolectric and would depend on its version as well as the apps sdk level, and whether you are using androidx tests.
