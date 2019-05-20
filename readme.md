@@ -4,7 +4,7 @@ Android Analyzer is a Gradle plugin for analyzing Android projects, integrating 
 and Jacoco for Kotlin and Java code coverage reports. The plugin provides a very easy to use interface 
 and abstracts away the complexity of setting up the two systems manually.
 
-An article explaining our ambitions and results related to the plugin, as well as an integration guide, can be found here: https://blog.usejournal.com/android-analyzer-df0e4d80dc74
+An article explaining our ambitions and results related to the plugin, as well as an integration guide, can be found here: https://medium.com/@robertas.konarskis/android-analyzer-df0e4d80dc74
 
 ## Features
 
