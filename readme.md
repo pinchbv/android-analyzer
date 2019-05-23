@@ -127,7 +127,7 @@ Below is a list of available properties with corresponding descriptions.
 | unitTestCoverage      | Boolean       | false                   | Toggle unit test coverage reports by Jacoco. If enabled, `packageName` and `buildVariant` must be specified too. |
 | packageName           | String        | null                    | Package name of your Android project. Must match your folder structure, e.g. `nl.pinch.appname`. |
 | buildVariant          | String        | null                    | Variant for running unit tests and generating code coverage reports. |
-| serverUrl             | String        | http://localhost:9000   | URL of Sonarqube server. |
+| serverUrl             | String        | http://localhost:9000   | URL of Sonarqube server. Can also be specified using an environment variable (see Server Integration section). |
 | useDefaultExclusions  | Boolean       | true                    | Toggle default exclusions from analysis and coverage reports. To get a list of default exclusions, call Gradle task `androidAnalyzerDefaultExclusions`. |
 | customExclusions      | Array(String) | emptyList(String)       | Provide a list of custom exclusions from analysis and coverage reports. |
 | sonarqubeUsername     | String        | admin                   | Sonarqube username. Prefer environment variables over this method for better security. |
@@ -161,6 +161,13 @@ For more information on the subject, check the example project or follow Robolec
 
 ## Sonarqube Server Integration
 
+#### Server URL
+In addition to supplying Sonarqube URL via the gradle extension, it can be passed as an anvironment variable:
+```
+ANDROID_ANALYZER_SONARQUBE_URL
+```
+If both the environment variable and the `serverUrl` gradle parameter are specified, the environment variable will be used.
+
 #### Authentication
 
 There are two ways to provide authentication to the Sonarqube server.  
@@ -185,6 +192,8 @@ The less secure way is using the Gradle extension. See `sonarqubeUsername`, `son
 
 #### Version 1.1.2 - May 23, 2019
 Added support for passing Sonarqube auth token directly without user credentials.
+
+Added support for passing Sonarqube server URL using an environment variable.
 
 -----------------------------------------------------------
 

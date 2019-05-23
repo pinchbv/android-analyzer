@@ -24,7 +24,7 @@ open class Params {
     var sonarqubePassword: String = System.getenv(passwordEnvKey) ?: Default.sonarqubePassword
     var sonarqubeToken: String? = System.getenv(tokenEnvKey)
 
-    var serverUrl = Default.serverUrl
+    var serverUrl = System.getenv(serverUrlEnvKey) ?: Default.serverUrl
 
     var useDefaultExclusions = true
     var customExclusions = emptyList<String>()
@@ -185,6 +185,11 @@ open class Params {
          * Sonarqube token environment variable
          */
         private const val tokenEnvKey = "ANDROID_ANALYZER_SONARQUBE_TOKEN"
+
+        /**
+         * Sonarqube server URL environment variable
+         */
+        private const val serverUrlEnvKey = "ANDROID_ANALYZER_SONARQUBE_URL"
     }
 }
 
