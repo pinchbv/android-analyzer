@@ -22,6 +22,7 @@ open class Params {
 
     var sonarqubeUsername: String = System.getenv(usernameEnvKey) ?: Default.sonarqubeUsername
     var sonarqubePassword: String = System.getenv(passwordEnvKey) ?: Default.sonarqubePassword
+    var sonarqubeToken: String? = System.getenv(tokenEnvKey)
 
     var serverUrl = Default.serverUrl
 
@@ -179,6 +180,11 @@ open class Params {
          * Sonarqube password environment variable
          */
         private const val passwordEnvKey = "ANDROID_ANALYZER_SONARQUBE_PASSWORD"
+
+        /**
+         * Sonarqube token environment variable
+         */
+        private const val tokenEnvKey = "ANDROID_ANALYZER_SONARQUBE_TOKEN"
     }
 }
 
@@ -245,8 +251,10 @@ class AndroidAnalyzer : Plugin<Project> {
             }
 
             /**
-             * Task for refreshing sonarqube user token.
-             * The old token (if any) is revoked and a new one is generated.
+             * Task for obtaining Sonarqube user token.
+             *
+             * If a token is provided using an environment variable, uses the provided token.
+             * Otherwise, the old token (if any) is revoked and a new one is generated.
              */
             proj.tasks.register(TaskSonarqubeAuth) {
                 it.outputs.upToDateWhen { false }
@@ -254,6 +262,12 @@ class AndroidAnalyzer : Plugin<Project> {
                 it.description = "Generates Sonarqube user token"
 
                 it.doLast {
+                    /** If Sonarqube token was provided, use it for authorization */
+                    params.sonarqubeToken?.let { envToken ->
+                        token = envToken
+                        return@doLast
+                    }
+
                     val revokeBody = FormBody.Builder()
                             .add("name", TokenName)
                             .build()
