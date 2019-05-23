@@ -178,7 +178,7 @@ ANDROID_ANALYZER_SONARQUBE_PASSWORD
 ```
 The plugin would then use these credentials to generate an authentication token.
 
-Alternatively, if you don't want to expose your Sonarqube credentials, you can generate a token in Sonarqube wen interface and supply it to the plugin directly:
+EXPERIMENTAL: Alternatively, if you don't want to expose your Sonarqube credentials, you can generate a token in Sonarqube wen interface and supply it to the plugin directly:
 ```
 ANDROID_ANALYZER_SONARQUBE_TOKEN
 ```
@@ -191,7 +191,7 @@ The less secure way is using the Gradle extension. See `sonarqubeUsername`, `son
 ## Changelog
 
 #### Version 1.1.2 - May 23, 2019
-Added support for passing Sonarqube auth token directly without user credentials.
+Added experimental support for passing Sonarqube auth token directly without user credentials.
 
 Added support for passing Sonarqube server URL using an environment variable.
 
