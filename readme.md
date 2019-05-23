@@ -47,7 +47,7 @@ allprojects {
     }
     dependencies {
         ..
-        classpath "com.justpinch:androidanalyzer:1.1.2"
+        classpath "com.justpinch:androidanalyzer:1.2.0"
     }
 }
 ```
@@ -114,13 +114,14 @@ Below is a list of available properties with corresponding descriptions.
 | property              | type          | default value           | description |
 | :-------------------- | :------------ | :---------------------- | :---------- |
 | applicationId         | String        | null                    | Unique Android application ID used in Sonarqube project key generation. E.g. and application ID of `my.project` will result in the following Sonarqube project key: `my.project-android`. |
-| projectName           | String        | null                    | Sonarqube project display name. |
+| projectName           | String        | null                    | Sonarqube project display name. Will not be overwritten if project is already present. |
 
 ##### Optional
 
 | property              | type          | default value           | description |
 | :-------------------- | :------------ | :---------------------- | :---------- |
 | projectVersion        | String        | undefined               | Sonarqube display project version. Typically same as app's `versionName`. |
+| projectVisibility     | String        | private                 | Sonarqube project visibility. Can be `public` or `private`. Will not be overwritten if project is already present. |
 | detekt                | Boolean       | false                   | Toggle Kotlin code analysis with Detekt. This will generate a configuration file and place it in the application directory. To see how a default configuration file looks like, run `./gradlew androidAnalyzerDefaultDetektConfig`. |
 | detektConfigFileName  | String        | detekt-config.yml       | Detekt configuration file name. |
 | detektBaseline        | String        | null                    | Path to detekt baseline file. For more information, please visit documentation of detekt. |
@@ -159,7 +160,10 @@ android.enableUnitTestBinaryResources=true
 For more information on the subject, check the example project or follow Robolectric setup guides. 
 
 
-## Sonarqube Server Integration
+## Sonarqube Server / CI Integration
+
+While the project can be fully configured via the Gradle extension, it is not secure to store credentials in version control.
+Therefore, the plugin supports configuration of sensitive properties using environment variables.
 
 #### Server URL
 In addition to supplying Sonarqube URL via the gradle extension, it can be passed as an anvironment variable:
@@ -189,6 +193,13 @@ The less secure way is using the Gradle extension. See `sonarqubeUsername`, `son
 
 
 ## Changelog
+
+#### Version 1.2.0 - May 24, 2019
+Stable Sonarqube auth token.
+
+Added support for setting Sonarqube project visibility.
+
+-----------------------------------------------------------
 
 #### Version 1.1.2 - May 23, 2019
 Added experimental support for passing Sonarqube auth token directly without user credentials.

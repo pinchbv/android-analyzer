@@ -19,6 +19,7 @@ open class Params {
     lateinit var projectName: String
 
     var projectVersion = Default.projectVersion
+    var projectVisibility = Default.projectVisibility
 
     var sonarqubeUsername: String = System.getenv(usernameEnvKey) ?: Default.sonarqubeUsername
     var sonarqubePassword: String = System.getenv(passwordEnvKey) ?: Default.sonarqubePassword
@@ -118,6 +119,11 @@ open class Params {
         private const val projectVersion = "undefined"
 
         /**
+         * Default Sonarqube project visibility
+         */
+        private const val projectVisibility = "private"
+
+        /**
          * Default Sonarqube server URL
          */
         private const val serverUrl = "http://localhost:9000"
@@ -201,7 +207,10 @@ class AndroidAnalyzer : Plugin<Project> {
 
     private val okhttp: OkHttpClient by lazy {
         OkHttpClient.Builder().authenticator { _, response ->
-            val credentials = Credentials.basic(params.sonarqubeUsername, params.sonarqubePassword)
+            val username = params.sonarqubeToken ?: params.sonarqubeUsername
+            val password = params.sonarqubeToken?.let { "" } ?: params.sonarqubePassword
+
+            val credentials = Credentials.basic(username, password)
             response.request().newBuilder().header("Authorization", credentials).build()
         }.build()
     }
@@ -235,6 +244,7 @@ class AndroidAnalyzer : Plugin<Project> {
                     val body = FormBody.Builder()
                             .add("project", params.projectKey)
                             .add("name", params.projectName)
+                            .add("visibility", params.projectVisibility)
                             .build()
 
                     val request = Request.Builder()
