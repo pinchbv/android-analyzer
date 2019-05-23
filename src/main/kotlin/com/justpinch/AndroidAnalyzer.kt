@@ -19,6 +19,7 @@ open class Params {
     lateinit var projectName: String
 
     var projectVersion = Default.projectVersion
+    var projectVisibility = Default.projectVisibility
 
     var sonarqubeUsername: String = System.getenv(usernameEnvKey) ?: Default.sonarqubeUsername
     var sonarqubePassword: String = System.getenv(passwordEnvKey) ?: Default.sonarqubePassword
@@ -116,6 +117,11 @@ open class Params {
          * Default Sonarqube project version
          */
         private const val projectVersion = "undefined"
+
+        /**
+         * Default Sonarqube project visibility
+         */
+        private const val projectVisibility = "private"
 
         /**
          * Default Sonarqube server URL
@@ -238,6 +244,7 @@ class AndroidAnalyzer : Plugin<Project> {
                     val body = FormBody.Builder()
                             .add("project", params.projectKey)
                             .add("name", params.projectName)
+                            .add("visibility", params.projectVisibility)
                             .build()
 
                     val request = Request.Builder()
