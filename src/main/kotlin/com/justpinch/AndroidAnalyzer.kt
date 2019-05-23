@@ -201,7 +201,10 @@ class AndroidAnalyzer : Plugin<Project> {
 
     private val okhttp: OkHttpClient by lazy {
         OkHttpClient.Builder().authenticator { _, response ->
-            val credentials = Credentials.basic(params.sonarqubeUsername, params.sonarqubePassword)
+            val username = params.sonarqubeToken ?: params.sonarqubeUsername
+            val password = params.sonarqubeToken?.let { "" } ?: params.sonarqubePassword
+
+            val credentials = Credentials.basic(username, password)
             response.request().newBuilder().header("Authorization", credentials).build()
         }.build()
     }
