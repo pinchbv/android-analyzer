@@ -162,6 +162,9 @@ For more information on the subject, check the example project or follow Robolec
 
 ## Sonarqube Server / CI Integration
 
+While the project can be fully configured via the Gradle extension, it is not secure to store credentials in version control.
+Therefore, the plugin supports configuration of sensitive properties using environment variables.
+
 #### Server URL
 In addition to supplying Sonarqube URL via the gradle extension, it can be passed as an anvironment variable:
 ```
