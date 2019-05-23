@@ -47,7 +47,7 @@ allprojects {
     }
     dependencies {
         ..
-        classpath "com.justpinch:androidanalyzer:1.1.1"
+        classpath "com.justpinch:androidanalyzer:1.1.2"
     }
 }
 ```
@@ -127,11 +127,12 @@ Below is a list of available properties with corresponding descriptions.
 | unitTestCoverage      | Boolean       | false                   | Toggle unit test coverage reports by Jacoco. If enabled, `packageName` and `buildVariant` must be specified too. |
 | packageName           | String        | null                    | Package name of your Android project. Must match your folder structure, e.g. `nl.pinch.appname`. |
 | buildVariant          | String        | null                    | Variant for running unit tests and generating code coverage reports. |
-| serverUrl             | String        | http://localhost:9000   | URL of Sonarqube server. |
+| serverUrl             | String        | http://localhost:9000   | URL of Sonarqube server. Can also be specified using an environment variable (see Server Integration section). |
 | useDefaultExclusions  | Boolean       | true                    | Toggle default exclusions from analysis and coverage reports. To get a list of default exclusions, call Gradle task `androidAnalyzerDefaultExclusions`. |
 | customExclusions      | Array(String) | emptyList(String)       | Provide a list of custom exclusions from analysis and coverage reports. |
 | sonarqubeUsername     | String        | admin                   | Sonarqube username. Prefer environment variables over this method for better security. |
 | sonarqubePassword     | String        | admin                   | Sonarqube password. Prefer environment variables over this method for better security. |
+| sonarqubeToken        | String        | null                    | Sonarqube token. Prefer environment variables over this method for better security. |
 
 
 ## Robolectric
@@ -160,19 +161,41 @@ For more information on the subject, check the example project or follow Robolec
 
 ## Sonarqube Server Integration
 
+#### Server URL
+In addition to supplying Sonarqube URL via the gradle extension, it can be passed as an anvironment variable:
+```
+ANDROID_ANALYZER_SONARQUBE_URL
+```
+If both the environment variable and the `serverUrl` gradle parameter are specified, the environment variable will be used.
+
 #### Authentication
 
 There are two ways to provide authentication to the Sonarqube server.  
-The preferred way is using environment variables. These are the following: 
+The preferred way is using environment variables. You can either supply your Sonarqube credentials: 
 ```
-username: ANDROID_ANALYZER_SONARQUBE_USERNAME
-password: ANDROID_ANALYZER_SONARQUBE_PASSWORD
+ANDROID_ANALYZER_SONARQUBE_USERNAME
+ANDROID_ANALYZER_SONARQUBE_PASSWORD
 ```
+The plugin would then use these credentials to generate an authentication token.
 
-The less secure way is using the Gradle extension. See `sonarqubeUsername` and `sonarqubePassword` properties the Android integration part.
+Alternatively, if you don't want to expose your Sonarqube credentials, you can generate a token in Sonarqube wen interface and supply it to the plugin directly:
+```
+ANDROID_ANALYZER_SONARQUBE_TOKEN
+```
+If both token and username/password are provided, token will be used and username/password will be ignored.
+This is the preferred way of setting up authentication in case your CI config file is in version control. 
+
+The less secure way is using the Gradle extension. See `sonarqubeUsername`, `sonarqubePassword` and `sonarqubeToken` properties the Android integration part.
 
 
 ## Changelog
+
+#### Version 1.1.2 - May 23, 2019
+Added support for passing Sonarqube auth token directly without user credentials.
+
+Added support for passing Sonarqube server URL using an environment variable.
+
+-----------------------------------------------------------
 
 #### Version 1.1.1 - May 12, 2019
 Renamed confusing `buildFlavor` parameter to a more correct `buildVariant`.
