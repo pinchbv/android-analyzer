@@ -195,9 +195,9 @@ The less secure way is using the Gradle extension. See `sonarqubeUsername`, `son
 ## Changelog
 
 #### Version 1.2.0 - May 24, 2019
-Sonarqube auth token stable.
+Stable Sonarqube auth token.
 
-
+Added support for setting Sonarqube project visibility.
 
 -----------------------------------------------------------
 
