@@ -56,7 +56,7 @@ dependencies {
 androidAnalyzer {
     applicationId = "com.konarskirob.androidsonar"
     projectName = "Android Analyzer Example App"
-    projectVersion = "1.1.1"
+    projectVersion = "1.1.2"
     unitTestCoverage = true
     detekt = true
     packageName = "com.konarskirob.androidsonar"
