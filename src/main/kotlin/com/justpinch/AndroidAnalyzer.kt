@@ -529,6 +529,8 @@ private fun Project.getBranchName(): String? {
         result.assertNormalExitValue()
         output
     } catch (e: ExecException) {
+        e.printStackTrace()
+        println("ERROR: ${e.message}")
         null
     }
 }
