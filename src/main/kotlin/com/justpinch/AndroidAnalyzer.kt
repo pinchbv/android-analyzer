@@ -3,9 +3,11 @@ package com.justpinch
 import groovy.json.JsonSlurper
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import okhttp3.*
+import org.apache.commons.io.output.ByteArrayOutputStream
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.process.internal.ExecException
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.sonarqube.gradle.SonarQubeExtension
@@ -216,6 +218,8 @@ class AndroidAnalyzer : Plugin<Project> {
     }
 
     override fun apply(project: Project) {
+        println("============= git branch name : ${project.getBranchName()} ===============")
+
         project.apply {
             it.plugin("org.sonarqube")
             it.plugin("jacoco")
@@ -375,6 +379,10 @@ class AndroidAnalyzer : Plugin<Project> {
                             props.property("sonar.exclusions", params.exclusions)
                             props.property("sonar.coverage.customExclusions", params.exclusions)
 
+                            proj.getBranchName()?.let { branch ->
+                                props.property("sonar.branch.name", branch)
+                            }
+
                             // test coverage settings
                             if (params.unitTestCoverage) {
                                 props.property("sonar.java.coveragePlugin", params.testCoveragePlugin)
@@ -504,3 +512,23 @@ private fun fail(message: String): Nothing = throw GradleException(message)
  * Extract user token from sonarqube authentication response
  */
 private fun Response.extractToken() = (JsonSlurper().parseText(body()?.string()) as Map<*, *>)["token"] as String
+
+/**
+ * Extract current git branch name
+ */
+private fun Project.getBranchName(): String? {
+    return try {
+        var output: String? = null
+
+        val result = exec {
+            it.standardOutput = ByteArrayOutputStream()
+            it.commandLine("git rev-parse --abbrev-ref HEAD")
+            output = it.standardOutput.toString()
+        }
+
+        result.assertNormalExitValue()
+        output
+    } catch (e: ExecException) {
+        null
+    }
+}
