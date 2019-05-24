@@ -518,19 +518,12 @@ private fun Response.extractToken() = (JsonSlurper().parseText(body()?.string())
  */
 private fun Project.getBranchName(): String? {
     return try {
-        var output: String? = null
-
-        val result = exec {
-            it.standardOutput = ByteArrayOutputStream()
-            it.commandLine("git rev-parse --abbrev-ref HEAD")
-            output = it.standardOutput.toString()
+        ByteArrayOutputStream().use { outputStream ->
+            exec {
+                it.commandLine("git rev-parse --abbrev-ref HEAD")
+                it.standardOutput = outputStream
+            }
+            outputStream.toString()
         }
-
-        result.assertNormalExitValue()
-        output
-    } catch (e: ExecException) {
-        e.printStackTrace()
-        println("ERROR: ${e.message}")
-        null
-    }
+    } catch (e: ExecException) { null }
 }
