@@ -182,7 +182,7 @@ ANDROID_ANALYZER_SONARQUBE_PASSWORD
 ```
 The plugin would then use these credentials to generate an authentication token.
 
-EXPERIMENTAL: Alternatively, if you don't want to expose your Sonarqube credentials, you can generate a token in Sonarqube wen interface and supply it to the plugin directly:
+Alternatively, if you don't want to expose your Sonarqube credentials, you can generate a token in Sonarqube wen interface and supply it to the plugin directly:
 ```
 ANDROID_ANALYZER_SONARQUBE_TOKEN
 ```
