@@ -3,9 +3,11 @@ package com.justpinch
 import groovy.json.JsonSlurper
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import okhttp3.*
+import org.apache.commons.io.output.ByteArrayOutputStream
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.process.internal.ExecException
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.sonarqube.gradle.SonarQubeExtension
@@ -24,6 +26,7 @@ open class Params {
     var sonarqubeUsername: String = System.getenv(usernameEnvKey) ?: Default.sonarqubeUsername
     var sonarqubePassword: String = System.getenv(passwordEnvKey) ?: Default.sonarqubePassword
     var sonarqubeToken: String? = System.getenv(tokenEnvKey)
+    var sonarqubeGitBranches: Boolean = System.getenv(branchesEnvKey)?.equals("true") ?: Default.sonarqubeGitBranches
 
     var serverUrl = System.getenv(serverUrlEnvKey) ?: Default.serverUrl
 
@@ -114,6 +117,11 @@ open class Params {
         private const val sonarqubePassword = "admin"
 
         /**
+         * Default git branch detection strategy
+         */
+        private const val sonarqubeGitBranches = false
+
+        /**
          * Default Sonarqube project version
          */
         private const val projectVersion = "undefined"
@@ -196,6 +204,11 @@ open class Params {
          * Sonarqube server URL environment variable
          */
         private const val serverUrlEnvKey = "ANDROID_ANALYZER_SONARQUBE_URL"
+
+        /**
+         * Automatic git branch detection toggle environment variable
+         */
+        private const val branchesEnvKey = "ANDROID_ANALYZER_SONARQUBE_BRANCHES"
     }
 }
 
@@ -375,6 +388,11 @@ class AndroidAnalyzer : Plugin<Project> {
                             props.property("sonar.exclusions", params.exclusions)
                             props.property("sonar.coverage.customExclusions", params.exclusions)
 
+                            // sonarqube branch settings
+                            if (params.sonarqubeGitBranches) {
+                                proj.gitBranchName()?.let { name -> props.property("sonar.branch.name", name) }
+                            }
+
                             // test coverage settings
                             if (params.unitTestCoverage) {
                                 props.property("sonar.java.coveragePlugin", params.testCoveragePlugin)
@@ -504,3 +522,22 @@ private fun fail(message: String): Nothing = throw GradleException(message)
  * Extract user token from sonarqube authentication response
  */
 private fun Response.extractToken() = (JsonSlurper().parseText(body()?.string()) as Map<*, *>)["token"] as String
+
+/**
+ * Extract current git branch name
+ */
+private fun Project.gitBranchName(): String? {
+    return try {
+        ByteArrayOutputStream().use { outputStream ->
+            exec { ex ->
+                ex.executable = "git"
+                ex.args = listOf("rev-parse", "--abbrev-ref", "HEAD")
+                ex.standardOutput = outputStream
+            }
+            outputStream.toString()
+        }
+    } catch (e: ExecException) {
+        println("Error occured while reading git branch name: ${e.message}")
+        null
+    }
+}
