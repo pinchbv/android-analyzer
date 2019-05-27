@@ -390,7 +390,7 @@ class AndroidAnalyzer : Plugin<Project> {
 
                             // sonarqube branch settings
                             if (params.sonarqubeGitBranches) {
-                                props.property("sonar.branch.name", proj.gitBranchName())
+                                proj.gitBranchName()?.let { name -> props.property("sonar.branch.name", name) }
                             }
 
                             // test coverage settings
@@ -529,11 +529,15 @@ private fun Response.extractToken() = (JsonSlurper().parseText(body()?.string())
 private fun Project.gitBranchName(): String? {
     return try {
         ByteArrayOutputStream().use { outputStream ->
-            exec {
-                it.commandLine("git rev-parse --abbrev-ref HEAD")
-                it.standardOutput = outputStream
+            exec { ex ->
+                ex.executable = "git"
+                ex.args = listOf("rev-parse", "--abbrev-ref", "HEAD")
+                ex.standardOutput = outputStream
             }
             outputStream.toString()
         }
-    } catch (e: ExecException) { null }
+    } catch (e: ExecException) {
+        println("Error occured while reading git branch name: ${e.message}")
+        null
+    }
 }
