@@ -13,8 +13,10 @@ An article explaining our ambitions and results related to the plugin, as well a
 - Configures relevant properties of the Jacoco plugin
 - Comes with a prepare list of default path exclusions
 - Provides a simple interface for integration in most projects
+- Provides a way to configure most critical parts using environment variables
 - Provides one Gradle task that does all the necessary work
 - Generates a default configuration file for Detekt which can be customized as required
+- Supports Sonarqube branch analysis with a simple toggle (only works with a paid Sonarqube license)
 
 
 ## Requirements
@@ -47,7 +49,7 @@ allprojects {
     }
     dependencies {
         ..
-        classpath "com.justpinch:androidanalyzer:1.2.0"
+        classpath "com.justpinch:androidanalyzer:1.2.1"
     }
 }
 ```
@@ -64,6 +66,7 @@ androidAnalyzer {
     unitTestCoverage = true
     packageName = 'com.konarskirob.androidsonar'
     buildVariant = 'debug'
+    sonarqubeGitBranches = true
 }
 ```
 
@@ -80,6 +83,12 @@ of your application.
 
 -----------------------------------------------------------
 
+If you have a paid Sonarqube license and want to make use of its git branch analysis feature,
+set `sonarqubeGitBranches = true` as per example above. It can also be configured using an environment variable 
+(see Sonarqube Server / CI Integration section).
+
+-----------------------------------------------------------
+
 CLI command to run the plugin (single-module project):
 ```
 ./gradlew androidAnalyzer
@@ -93,12 +102,12 @@ CLI command to run the plugin (multi-module project):
 ./gradlew feature:androidAnalyzer
 ```
 
-CLI command to get a list of default exclusions:
+Bonus: CLI command to get a list of default exclusions:
 ```
 ./gradlew androidAnalyzerDefaultExclusions
 ```
 
-CLI command to print a default detekt configuration file:
+Bonus: CLI command to print a default detekt configuration file:
 ```
 ./gradlew androidAnalyzerDefaultDetektConfig
 ```
@@ -134,6 +143,7 @@ Below is a list of available properties with corresponding descriptions.
 | sonarqubeUsername     | String        | admin                   | Sonarqube username. Prefer environment variables over this method for better security. |
 | sonarqubePassword     | String        | admin                   | Sonarqube password. Prefer environment variables over this method for better security. |
 | sonarqubeToken        | String        | null                    | Sonarqube token. Prefer environment variables over this method for better security. |
+| sonarqubeGitBranches  | Boolean       | false                   | Sonarqube git branch analysis feature toggle for paid licenses. Prefer environment variables over this method in multi-module projects. |
 
 
 ## Robolectric
@@ -166,6 +176,7 @@ While the project can be fully configured via the Gradle extension, it is not se
 Therefore, the plugin supports configuration of sensitive properties using environment variables.
 
 #### Server URL
+
 In addition to supplying Sonarqube URL via the gradle extension, it can be passed as an anvironment variable:
 ```
 ANDROID_ANALYZER_SONARQUBE_URL
@@ -191,8 +202,21 @@ This is the preferred way of setting up authentication in case your CI config fi
 
 The less secure way is using the Gradle extension. See `sonarqubeUsername`, `sonarqubePassword` and `sonarqubeToken` properties the Android integration part.
 
+#### Sonarqube Branch Analysis
+
+In addition to setting Sonarqube branch analysis feature flag via the Gradle extension, it can be passed as environment variable:
+```
+ANDROID_ANALYZER_SONARQUBE_BRANCHES
+```
+The plugin would use this to detect active git branch name and pass it to Sonarqube.
+
 
 ## Changelog
+
+#### Version 1.2.1 - May 27, 2019
+Added Sonarqube branch analysis feature toggle.
+
+-----------------------------------------------------------
 
 #### Version 1.2.0 - May 24, 2019
 Stable Sonarqube auth token.
