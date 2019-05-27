@@ -208,7 +208,7 @@ In addition to setting Sonarqube branch analysis feature flag via the Gradle ext
 ```
 ANDROID_ANALYZER_SONARQUBE_BRANCHES
 ```
-The plugin would use this to detect active git branch name and pass it to Sonarqube.
+Possible values are "true" and "false". If the variable is set to "true", the plugin would use this to detect active git branch name and pass it to Sonarqube.
 
 
 ## Changelog
