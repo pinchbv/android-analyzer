@@ -26,6 +26,7 @@ open class Params {
     var sonarqubeUsername: String = System.getenv(usernameEnvKey) ?: Default.sonarqubeUsername
     var sonarqubePassword: String = System.getenv(passwordEnvKey) ?: Default.sonarqubePassword
     var sonarqubeToken: String? = System.getenv(tokenEnvKey)
+    var sonarqubeGitBranches: Boolean = System.getenv(branchesEnvKey)?.equals("true") ?: Default.sonarqubeGitBranches
 
     var serverUrl = System.getenv(serverUrlEnvKey) ?: Default.serverUrl
 
@@ -116,6 +117,11 @@ open class Params {
         private const val sonarqubePassword = "admin"
 
         /**
+         * Default git branch detection strategy
+         */
+        private const val sonarqubeGitBranches = false
+
+        /**
          * Default Sonarqube project version
          */
         private const val projectVersion = "undefined"
@@ -198,6 +204,11 @@ open class Params {
          * Sonarqube server URL environment variable
          */
         private const val serverUrlEnvKey = "ANDROID_ANALYZER_SONARQUBE_URL"
+
+        /**
+         * Automatic git branch detection toggle environment variable
+         */
+        private const val branchesEnvKey = "ANDROID_ANALYZER_SONARQUBE_BRANCHES"
     }
 }
 
@@ -218,8 +229,6 @@ class AndroidAnalyzer : Plugin<Project> {
     }
 
     override fun apply(project: Project) {
-        println("============= git branch name : ${project.getBranchName()} ===============")
-
         project.apply {
             it.plugin("org.sonarqube")
             it.plugin("jacoco")
@@ -379,8 +388,9 @@ class AndroidAnalyzer : Plugin<Project> {
                             props.property("sonar.exclusions", params.exclusions)
                             props.property("sonar.coverage.customExclusions", params.exclusions)
 
-                            proj.getBranchName()?.let { branch ->
-                                props.property("sonar.branch.name", branch)
+                            // sonarqube branch settings
+                            if (params.sonarqubeGitBranches) {
+                                props.property("sonar.branch.name", proj.gitBranchName())
                             }
 
                             // test coverage settings
@@ -516,7 +526,7 @@ private fun Response.extractToken() = (JsonSlurper().parseText(body()?.string())
 /**
  * Extract current git branch name
  */
-private fun Project.getBranchName(): String? {
+private fun Project.gitBranchName(): String? {
     return try {
         ByteArrayOutputStream().use { outputStream ->
             exec {
