@@ -66,7 +66,7 @@ androidAnalyzer {
     unitTestCoverage = true
     packageName = 'com.konarskirob.androidsonar'
     buildVariant = 'debug'
-    sonarqubeGitBranches = true
+    sonarqubeGitBranches = true // only works with a paid license
 }
 ```
 
