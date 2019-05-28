@@ -54,7 +54,7 @@ allprojects {
     }
     dependencies {
         ..
-        classpath "com.justpinch:androidanalyzer:1.2.1"
+        classpath "com.justpinch:androidanalyzer:1.2.2"
     }
 }
 ```
@@ -217,6 +217,11 @@ Possible values are "true" and "false". If the variable is set to "true", the pl
 
 
 ## Changelog
+
+#### Version 1.2.2 - May 28, 2019
+When used with Gitlab CI, branch name is extracted from an environment variable.
+
+-----------------------------------------------------------
 
 #### Version 1.2.1 - May 27, 2019
 Added Sonarqube branch analysis feature toggle.

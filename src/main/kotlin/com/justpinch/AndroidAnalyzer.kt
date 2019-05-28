@@ -524,9 +524,13 @@ private fun fail(message: String): Nothing = throw GradleException(message)
 private fun Response.extractToken() = (JsonSlurper().parseText(body()?.string()) as Map<*, *>)["token"] as String
 
 /**
- * Extract current git branch name
+ * Extract current git branch name.
+ * If used with Gitlab CI, uses its environment variable.
  */
 private fun Project.gitBranchName(): String? {
+    val gitlabCIBranchName = System.getenv("CI_COMMIT_REF_NAME")
+    if (gitlabCIBranchName != null) return gitlabCIBranchName
+
     return try {
         ByteArrayOutputStream().use { outputStream ->
             exec { ex ->
