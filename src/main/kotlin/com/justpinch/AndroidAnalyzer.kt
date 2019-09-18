@@ -5,6 +5,7 @@ import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import okhttp3.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.sonarqube.gradle.SonarQubeExtension
@@ -254,7 +255,6 @@ class AndroidAnalyzer : Plugin<Project> {
                 it.outputs.upToDateWhen { false }
                 it.group = TaskGroup
                 it.description = "Creates a Sonarqube project"
-                it.dependsOn(mutableListOf(proj.tasks.findByName(TaskSonarqubeAuth)))
 
                 it.doLast {
                     val body = FormBody.Builder()
@@ -374,7 +374,6 @@ class AndroidAnalyzer : Plugin<Project> {
                 it.outputs.upToDateWhen { false }
                 it.group = TaskGroup
                 it.description = "Configures Sonarqube inspection"
-                it.dependsOn(mutableListOf(proj.tasks.findByName(TaskSonarqubeProjectRegister)))
 
                 it.doLast {
                     (proj.extensions.findByName("sonarqube") as SonarQubeExtension).apply {
@@ -449,13 +448,6 @@ class AndroidAnalyzer : Plugin<Project> {
                 it.outputs.upToDateWhen { false }
                 it.group = TaskGroup
                 it.description = "Polls for the latest project analysis"
-                it.setDependsOn(
-                        mutableListOf(
-                                proj.tasks.findByName(TaskSonarqubeConfig),
-                                proj.tasks.findByName(TaskSonarqubeAuth),
-                                proj.tasks.findByName(TaskSonarqube)
-                        )
-                )
 
                 it.doLast {
                     fun tryGetAnalysisId(buildString: String): String? {
@@ -517,20 +509,11 @@ class AndroidAnalyzer : Plugin<Project> {
                 it.group = TaskGroup
                 it.description = "Runs AndroidAnalyzer plugin"
 
-                it.setDependsOn(mutableListOf<String>().apply {
-                    add(TaskSonarqubeProjectRegister)
-                    add(TaskSonarqubeAuth)
-                    if (params.unitTestCoverage) {
-                        add(TaskUnitTestJacoco)
-                    }
-                    if (params.detekt) {
-                        add(TaskDetektConfig)
-                        add(TaskDetekt)
-                    }
-                    add(TaskSonarqubeConfig)
-                    add(TaskSonarqube)
+                it.setDependsOn(mutableListOf<Task>().apply {
+                    add(proj.findTask(TaskSonarqube))
+
                     if (params.buildBreaker) {
-                        add(TaskSonarqubePollAnalysis)
+                        add(proj.findTask(TaskSonarqubePollAnalysis))
                     }
                 })
             }
@@ -569,10 +552,31 @@ class AndroidAnalyzer : Plugin<Project> {
                 }
             }
 
-            if (params.detekt) {
-                proj.tasks.findByName(TaskSonarqube)?.setDependsOn(mutableListOf(proj.tasks.findByName(TaskDetekt)))
-                proj.tasks.findByName(TaskDetekt)?.setDependsOn(mutableListOf(proj.tasks.findByName(TaskDetektConfig)))
-            }
+            proj.findTask(TaskSonarqube).dependsOn(mutableListOf<Task>().apply {
+                add(proj.findTask(TaskSonarqubeConfig))
+
+                if (params.unitTestCoverage) {
+                    add(proj.findTask(TaskUnitTestJacoco))
+                }
+
+                if (params.detekt) {
+                    add(proj.findTask(TaskDetekt))
+                }
+            })
+
+            proj.findTask(TaskDetekt).dependsOn(mutableListOf<Task>(proj.findTask(TaskDetektConfig)))
+
+            proj.findTask(TaskSonarqubeConfig).dependsOn(mutableListOf<Task>().apply {
+                add(proj.findTask(TaskSonarqubeProjectRegister))
+            })
+
+            proj.findTask(TaskSonarqubeProjectRegister).dependsOn(mutableListOf<Task>().apply {
+                add(proj.findTask(TaskSonarqubeAuth))
+            })
+
+            proj.findTask(TaskSonarqubePollAnalysis).dependsOn(mutableListOf<Task>().apply {
+                add(proj.findTask(TaskSonarqube))
+            })
         }
     }
 
@@ -645,3 +649,5 @@ private fun Response.extractAnalysisQualityGateStatus(): Boolean {
 
     return analysisStatus == "OK"
 }
+
+private fun Project.findTask(taskName: String) = tasks.findByName(taskName)!!
