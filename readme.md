@@ -96,6 +96,11 @@ set `sonarqubeGitBranches = true` as per example above. It can also be configure
 
 -----------------------------------------------------------
 
+If you want your gradle build to fail if a Sonarqube quality gate does not pass, use `buildBreaker = true` 
+as per the example above.
+
+-----------------------------------------------------------
+
 CLI command to run the plugin (single-module project):
 ```
 ./gradlew androidAnalyzer
