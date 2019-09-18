@@ -3,6 +3,7 @@ package com.justpinch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.apache.commons.io.output.ByteArrayOutputStream
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.process.internal.ExecException
