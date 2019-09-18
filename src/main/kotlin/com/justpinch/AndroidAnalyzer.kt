@@ -459,8 +459,14 @@ class AndroidAnalyzer : Plugin<Project> {
 
                 it.doLast {
                     fun tryGetAnalysisId(buildString: String): String? {
+                        var url = "${params.serverUrl}/api/project_analyses/search?project=${params.projectKey}&ps=20"
+
+                        if (params.sonarqubeGitBranches) {
+                            url += "&branch=${proj.gitBranchName()}"
+                        }
+
                         val request = Request.Builder()
-                                .url("${params.serverUrl}/api/project_analyses/search?project=${params.projectKey}&ps=20")
+                                .url(url)
                                 .authenticated(token)
                                 .build()
 
@@ -561,6 +567,11 @@ class AndroidAnalyzer : Plugin<Project> {
                     println(DetektConfig)
                     println("------------------------------------")
                 }
+            }
+
+            if (params.detekt) {
+                proj.tasks.findByName(TaskSonarqube)?.setDependsOn(mutableListOf(proj.tasks.findByName(TaskDetekt)))
+                proj.tasks.findByName(TaskDetekt)?.setDependsOn(mutableListOf(proj.tasks.findByName(TaskDetektConfig)))
             }
         }
     }
