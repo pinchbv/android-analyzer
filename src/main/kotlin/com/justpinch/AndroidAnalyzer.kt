@@ -562,6 +562,11 @@ class AndroidAnalyzer : Plugin<Project> {
                     println("------------------------------------")
                 }
             }
+
+            if (params.detekt) {
+                proj.tasks.findByName(TaskSonarqube)?.setDependsOn(mutableListOf(proj.tasks.findByName(TaskDetekt)))
+                proj.tasks.findByName(TaskDetekt)?.setDependsOn(mutableListOf(proj.tasks.findByName(TaskDetektConfig)))
+            }
         }
     }
 
