@@ -13,6 +13,7 @@ An article explaining our ambitions and results related to the plugin, as well a
 - Configures relevant properties of the Jacoco plugin
 - Comes with a prepare list of default path exclusions
 - Provides a simple interface for integration in most projects
+- Supports build breaker functionality
 - Provides a way to configure most critical parts using environment variables
 - Provides one Gradle task that does all the necessary work
 - Generates a default configuration file for Detekt which can be customized as required
@@ -54,7 +55,7 @@ allprojects {
     }
     dependencies {
         ..
-        classpath "com.justpinch:androidanalyzer:1.2.2"
+        classpath "com.justpinch:androidanalyzer:1.3.0"
     }
 }
 ```
@@ -71,6 +72,7 @@ androidAnalyzer {
     unitTestCoverage = true
     packageName = 'com.konarskirob.androidsonar'
     buildVariant = 'debug'
+    buildBreaker = true
     sonarqubeGitBranches = true // only works with a paid license
 }
 ```
@@ -149,6 +151,8 @@ Below is a list of available properties with corresponding descriptions.
 | sonarqubePassword     | String        | admin                   | Sonarqube password. Prefer environment variables over this method for better security. |
 | sonarqubeToken        | String        | null                    | Sonarqube token. Prefer environment variables over this method for better security. |
 | sonarqubeGitBranches  | Boolean       | false                   | Sonarqube git branch analysis feature toggle for paid licenses. Prefer environment variables over this method in multi-module projects. |
+| buildBreaker          | Boolean       | false                   | Fail gradle build if a Sonarqube quality gate does not pass. |
+| buildBreakerTimeout   | Integer       | 180                     | Build breaker timeout in seconds. This is the maximum allowed time for the plugin to poll the Sonarqube Web API for analysis results. |
 
 
 ## Robolectric
@@ -217,6 +221,12 @@ Possible values are "true" and "false". If the variable is set to "true", the pl
 
 
 ## Changelog
+
+
+#### Version 1.3.0 - September 18, 2019
+Build breaker functionality failing the build if a Sonarqube quality gate does not pass.
+
+-----------------------------------------------------------
 
 #### Version 1.2.2 - May 28, 2019
 When used with Gitlab CI, branch name is extracted from an environment variable.

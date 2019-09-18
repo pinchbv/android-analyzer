@@ -3,11 +3,8 @@ package com.justpinch
 import groovy.json.JsonSlurper
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import okhttp3.*
-import org.apache.commons.io.output.ByteArrayOutputStream
-import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.process.internal.ExecException
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.sonarqube.gradle.SonarQubeExtension
@@ -29,6 +26,9 @@ open class Params {
     var sonarqubeGitBranches: Boolean = System.getenv(branchesEnvKey)?.equals("true") ?: Default.sonarqubeGitBranches
 
     var serverUrl = System.getenv(serverUrlEnvKey) ?: Default.serverUrl
+
+    var buildBreaker = Default.buildBreaker
+    var buildBreakerTimeout = Default.buildBreakerTimeout
 
     var useDefaultExclusions = true
     var customExclusions = emptyList<String>()
@@ -137,6 +137,16 @@ open class Params {
         private const val serverUrl = "http://localhost:9000"
 
         /**
+         * Fail the build if quality gate does not pass
+         */
+        private const val buildBreaker = false
+
+        /**
+         * Max polling time in seconds for builds requiring build breaker capability
+         */
+        private const val buildBreakerTimeout = 180
+
+        /**
          * Default Detekt analysis enabled/disabled (Kotlin only)
          */
         private const val detekt = false
@@ -218,15 +228,7 @@ class AndroidAnalyzer : Plugin<Project> {
 
     private lateinit var token: String
 
-    private val okhttp: OkHttpClient by lazy {
-        OkHttpClient.Builder().authenticator { _, response ->
-            val username = params.sonarqubeToken ?: params.sonarqubeUsername
-            val password = params.sonarqubeToken?.let { "" } ?: params.sonarqubePassword
-
-            val credentials = Credentials.basic(username, password)
-            response.request().newBuilder().header("Authorization", credentials).build()
-        }.build()
-    }
+    private val buildString: String by lazy { generateRandomString() }
 
     override fun apply(project: Project) {
         project.apply {
@@ -252,6 +254,7 @@ class AndroidAnalyzer : Plugin<Project> {
                 it.outputs.upToDateWhen { false }
                 it.group = TaskGroup
                 it.description = "Creates a Sonarqube project"
+                it.dependsOn(mutableListOf(proj.tasks.findByName(TaskSonarqubeAuth)))
 
                 it.doLast {
                     val body = FormBody.Builder()
@@ -265,7 +268,7 @@ class AndroidAnalyzer : Plugin<Project> {
                             .post(body)
                             .build()
 
-                    val response = okhttp.newCall(request).execute()
+                    val response = okHttpClient(token).newCall(request).execute()
 
                     if (response.isSuccessful) {
                         println("Project successfully created")
@@ -305,7 +308,7 @@ class AndroidAnalyzer : Plugin<Project> {
                             .post(revokeBody)
                             .build()
 
-                    okhttp.newCall(revokeRequest).execute().close()
+                    okHttpClient(null).newCall(revokeRequest).execute().close()
 
                     val body = FormBody.Builder()
                             .add("name", TokenName)
@@ -316,7 +319,7 @@ class AndroidAnalyzer : Plugin<Project> {
                             .post(body)
                             .build()
 
-                    val response = okhttp.newCall(request).execute()
+                    val response = okHttpClient().newCall(request).execute()
 
                     if (response.isSuccessful) {
                         token = response.extractToken()
@@ -371,6 +374,7 @@ class AndroidAnalyzer : Plugin<Project> {
                 it.outputs.upToDateWhen { false }
                 it.group = TaskGroup
                 it.description = "Configures Sonarqube inspection"
+                it.dependsOn(mutableListOf(proj.tasks.findByName(TaskSonarqubeProjectRegister)))
 
                 it.doLast {
                     (proj.extensions.findByName("sonarqube") as SonarQubeExtension).apply {
@@ -405,6 +409,11 @@ class AndroidAnalyzer : Plugin<Project> {
                             if (params.detekt) {
                                 props.property("sonar.kotlin.detekt.reportPaths", params.detektReportsPath)
                             }
+
+                            // build breaker settings
+                            if (params.buildBreaker) {
+                                props.property("sonar.buildString", buildString)
+                            }
                         }
                     }
                 }
@@ -434,6 +443,67 @@ class AndroidAnalyzer : Plugin<Project> {
             }
 
             /**
+             * Polls Sonarqube API for quality gate results
+             */
+            proj.tasks.register(TaskSonarqubePollAnalysis) {
+                it.outputs.upToDateWhen { false }
+                it.group = TaskGroup
+                it.description = "Polls for the latest project analysis"
+                it.setDependsOn(
+                        mutableListOf(
+                                proj.tasks.findByName(TaskSonarqubeConfig),
+                                proj.tasks.findByName(TaskSonarqubeAuth),
+                                proj.tasks.findByName(TaskSonarqube)
+                        )
+                )
+
+                it.doLast {
+                    fun tryGetAnalysisId(buildString: String): String? {
+                        val request = Request.Builder()
+                                .url("${params.serverUrl}/api/project_analyses/search?project=${params.projectKey}&ps=20")
+                                .authenticated(token)
+                                .build()
+
+                        val client = OkHttpClient().newBuilder().build()
+
+                        return client.execute(request, "Could not extract analysis id with buildString: $buildString") {
+                            extractAnalysisId(buildString)
+                        }
+                    }
+
+                    fun isQualityGateSuccessful(analysisId: String): Boolean {
+                        val request = Request.Builder()
+                                .url("${params.serverUrl}/api/qualitygates/project_status?analysisId=$analysisId")
+                                .authenticated(token)
+                                .build()
+
+                        val client = OkHttpClient().newBuilder().build()
+
+                        return client.execute(request, "Could not retrieve analysis by id: $analysisId") {
+                            extractAnalysisQualityGateStatus()
+                        }
+                    }
+
+                    val pollingIntervalSeconds = 5
+                    val maxAttempts = params.buildBreakerTimeout / pollingIntervalSeconds
+                    var analysisId: String? = null
+                    var count = 0
+                    while (analysisId == null) {
+                        if (++count > maxAttempts) {
+                            fail("Sonarqube analysis polling timed out. Try increasing buildBreakerTimeout parameter.")
+                        }
+
+                        Thread.sleep(pollingIntervalSeconds * 1000L)
+                        analysisId = tryGetAnalysisId(buildString)
+                    }
+
+                    if (!isQualityGateSuccessful(analysisId)) {
+                        fail("Sonarqube Quality gate failed. Please check the discovered issues and fix them at ${params.serverUrl}.")
+                    }
+                }
+            }
+
+            /**
              * Run AndroidAnalyzer plugin without coverage
              */
             proj.tasks.register(TaskAndroidAnalyzer) {
@@ -453,6 +523,9 @@ class AndroidAnalyzer : Plugin<Project> {
                     }
                     add(TaskSonarqubeConfig)
                     add(TaskSonarqube)
+                    if (params.buildBreaker) {
+                        add(TaskSonarqubePollAnalysis)
+                    }
                 })
             }
 
@@ -492,6 +565,20 @@ class AndroidAnalyzer : Plugin<Project> {
         }
     }
 
+    private fun okHttpClient(token: String? = null) =
+            OkHttpClient.Builder().authenticator { _, response ->
+                val username = token ?: params.sonarqubeUsername
+                val password = token?.let { "" } ?: params.sonarqubePassword
+
+                val credentials = Credentials.basic(username, password)
+
+                response.request().newBuilder().header("Authorization", credentials).build()
+            }.build()
+
+    private fun Request.Builder.authenticated(token: String): Request.Builder {
+        return addHeader("Authorization", Credentials.basic(token, ""))
+    }
+
     companion object {
 
         private const val ExtensionName = "androidAnalyzer"
@@ -508,15 +595,12 @@ class AndroidAnalyzer : Plugin<Project> {
         private const val TaskDetektConfig = "androidAnalyzerDetektConfig"
         private const val TaskDefaultDetektConfig = "androidAnalyzerDefaultDetektConfig"
 
+        private const val TaskSonarqubePollAnalysis = "androidAnalyzerPollAnalysis"
+
         private const val TaskSonarqube = "sonarqube"
         private const val TaskDetekt = "detekt"
     }
 }
-
-/**
- * Throw [GradleException] with a given message, failing the build
- */
-private fun fail(message: String): Nothing = throw GradleException(message)
 
 /**
  * Extract user token from sonarqube authentication response
@@ -524,24 +608,29 @@ private fun fail(message: String): Nothing = throw GradleException(message)
 private fun Response.extractToken() = (JsonSlurper().parseText(body()?.string()) as Map<*, *>)["token"] as String
 
 /**
- * Extract current git branch name.
- * If used with Gitlab CI, uses its environment variable.
+ * Extract id of the analysis with a given [buildString]
  */
-private fun Project.gitBranchName(): String? {
-    val gitlabCIBranchName = System.getenv("CI_COMMIT_REF_NAME")
-    if (gitlabCIBranchName != null) return gitlabCIBranchName
+private fun Response.extractAnalysisId(buildString: String): String? {
+    val list = (JsonSlurper().parseText(body()?.string()) as Map<*, *>)["analyses"] as List<*>
 
-    return try {
-        ByteArrayOutputStream().use { outputStream ->
-            exec { ex ->
-                ex.executable = "git"
-                ex.args = listOf("rev-parse", "--abbrev-ref", "HEAD")
-                ex.standardOutput = outputStream
-            }
-            outputStream.toString()
+    list.forEach { analysis ->
+        val json = analysis as Map<String, *>
+        val analysisBuildString = json["buildString"]
+
+        if (buildString == analysisBuildString) {
+            return json["key"] as String
         }
-    } catch (e: ExecException) {
-        println("Error occured while reading git branch name: ${e.message}")
-        null
     }
+
+    return null
+}
+
+/**
+ * Extract analysis status, returns [true] if status is "OK"
+ */
+private fun Response.extractAnalysisQualityGateStatus(): Boolean {
+    val projectStatus = (JsonSlurper().parseText(body()?.string()) as Map<*, *>)["projectStatus"] as Map<String, *>
+    val analysisStatus = projectStatus["status"] as String
+
+    return analysisStatus == "OK"
 }
