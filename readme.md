@@ -32,11 +32,6 @@ An article explaining our ambitions and results related to the plugin, as well a
 - In multi-module projects, each module is treated as a separate Sonarqube project 
 
 
-## Coming soon
-
-- Sonarqube branch support (available only with a paid license)
-
-
 ## Android Integration
 
 *NOTE*: an example project using the plugin can be found in this repository.
