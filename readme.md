@@ -13,7 +13,7 @@ An article explaining our ambitions and results related to the plugin, as well a
 - Configures relevant properties of the Jacoco plugin
 - Comes with a prepare list of default path exclusions
 - Provides a simple interface for integration in most projects
-- Supports build breaker functionality
+- Supports build breaker functionality for failing quality gates
 - Provides a way to configure most critical parts using environment variables
 - Provides one Gradle task that does all the necessary work
 - Generates a default configuration file for Detekt which can be customized as required
