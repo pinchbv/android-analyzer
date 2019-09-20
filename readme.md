@@ -223,7 +223,7 @@ Possible values are "true" and "false". If the variable is set to "true", the pl
 ## Changelog
 
 
-#### Version 1.3.1 - September 19, 2019
+#### Version 1.3.1 - September 20, 2019
 Added support for branching functionality in TravisCI, CircleCI and Jenkins.
 
 -----------------------------------------------------------
