@@ -50,7 +50,7 @@ allprojects {
     }
     dependencies {
         ..
-        classpath "com.justpinch:androidanalyzer:1.3.0"
+        classpath "com.justpinch:androidanalyzer:1.3.1"
     }
 }
 ```
@@ -222,6 +222,11 @@ Possible values are "true" and "false". If the variable is set to "true", the pl
 
 ## Changelog
 
+
+#### Version 1.3.1 - September 20, 2019
+Added support for branching functionality in TravisCI, CircleCI and Jenkins.
+
+-----------------------------------------------------------
 
 #### Version 1.3.0 - September 18, 2019
 Build breaker functionality failing the build if a Sonarqube quality gate does not pass.

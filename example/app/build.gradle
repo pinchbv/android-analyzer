@@ -61,4 +61,5 @@ androidAnalyzer {
     detekt = true
     packageName = "com.konarskirob.androidsonar"
     buildVariant = "debug"
+    buildBreaker = true
 }

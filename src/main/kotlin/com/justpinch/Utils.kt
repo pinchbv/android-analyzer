@@ -19,11 +19,20 @@ internal fun generateRandomString(length: Int = 16, chars: List<Char> = charPool
 
 /**
  * Extract current git branch name.
- * If used with Gitlab CI, uses its environment variable.
+ * If used with CI, uses its environment variable.
  */
 internal fun Project.gitBranchName(): String? {
     val gitlabCIBranchName = System.getenv("CI_COMMIT_REF_NAME")
     if (gitlabCIBranchName != null) return gitlabCIBranchName
+
+    val jenkinsBranchName = System.getenv("GIT_BRANCH")
+    if (jenkinsBranchName != null) return jenkinsBranchName
+
+    val circleCIBranchName = System.getenv("CIRCLE_BRANCH")
+    if (circleCIBranchName != null) return circleCIBranchName
+
+    val travisCIBranchName = System.getenv("TRAVIS_BRANCH")
+    if (travisCIBranchName != null) return travisCIBranchName
 
     return try {
         ByteArrayOutputStream().use { outputStream ->
