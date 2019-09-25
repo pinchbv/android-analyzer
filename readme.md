@@ -50,7 +50,7 @@ allprojects {
     }
     dependencies {
         ..
-        classpath "com.justpinch:androidanalyzer:1.3.1"
+        classpath "com.justpinch:androidanalyzer:1.3.2"
     }
 }
 ```
@@ -222,6 +222,10 @@ Possible values are "true" and "false". If the variable is set to "true", the pl
 
 ## Changelog
 
+#### Version 1.3.2 - September 25, 2019
+Detekt dependency updated to most recent stable version.
+
+-----------------------------------------------------------
 
 #### Version 1.3.1 - September 20, 2019
 Added support for branching functionality in TravisCI, CircleCI and Jenkins.
