@@ -41,7 +41,7 @@ An article explaining our ambitions and results related to the plugin, as well a
 
 Project-level `build.gradle`:
 ```
-allprojects {
+buildScript {
     repositories {
         ..
         jcenter()
