@@ -50,7 +50,7 @@ buildScript {
     }
     dependencies {
         ..
-        classpath "com.justpinch:androidanalyzer:1.3.2"
+        classpath "com.justpinch:androidanalyzer:1.3.3"
     }
 }
 ```
@@ -222,6 +222,10 @@ Possible values are "true" and "false". If the variable is set to "true", the pl
 
 ## Changelog
 
+#### Version 1.3.3 - October 16, 2019
+Added a license.
+
+-----------------------------------------------------------
 #### Version 1.3.2 - September 25, 2019
 Detekt dependency updated to most recent stable version.
 
