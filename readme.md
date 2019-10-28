@@ -59,6 +59,12 @@ Application-level `build.gradle`:
 ```
 apply plugin: 'com.justpinch.androidanalyzer'
 ..
+// minimal setup
+androidAnalyzer {
+    applicationId = 'com.konarskirob.androidsonar'
+    projectName = 'Android Analyzer Example App'
+}
+// setup with more features
 androidAnalyzer {
     applicationId = 'com.konarskirob.androidsonar'
     projectName = 'Android Analyzer Example App'
