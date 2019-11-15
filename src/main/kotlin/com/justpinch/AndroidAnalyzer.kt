@@ -24,6 +24,7 @@ open class Params {
     var sonarqubeUsername: String = System.getenv(usernameEnvKey) ?: Default.sonarqubeUsername
     var sonarqubePassword: String = System.getenv(passwordEnvKey) ?: Default.sonarqubePassword
     var sonarqubeToken: String? = System.getenv(tokenEnvKey)
+    var sonarqubeAuth: Boolean = Default.sonarqubeAuth
     var sonarqubeGitBranches: Boolean = System.getenv(branchesEnvKey)?.equals("true") ?: Default.sonarqubeGitBranches
 
     var serverUrl = System.getenv(serverUrlEnvKey) ?: Default.serverUrl
@@ -121,6 +122,13 @@ open class Params {
          * Default git branch detection strategy
          */
         private const val sonarqubeGitBranches = false
+
+        /**
+         * Default sonarqube auth strategy.
+         * When set to true, the plugin will automatically try to authorize with the given credentials.
+         * When set to false, the plugin will not try to authorize in any way.
+         */
+        private const val sonarqubeAuth = true
 
         /**
          * Default Sonarqube project version
@@ -268,7 +276,8 @@ class AndroidAnalyzer : Plugin<Project> {
                             .post(body)
                             .build()
 
-                    val response = okHttpClient(token).newCall(request).execute()
+                    val client = if (params.sonarqubeAuth) tokenOkHttpClient(token) else unauthenticatedOkHttpClient()
+                    val response = client.newCall(request).execute()
 
                     if (response.isSuccessful) {
                         println("Project successfully created")
@@ -293,6 +302,11 @@ class AndroidAnalyzer : Plugin<Project> {
                 it.description = "Generates Sonarqube user token"
 
                 it.doLast {
+                    /** No need for auth if it is disabled */
+                    if (!params.sonarqubeAuth) {
+                        return@doLast
+                    }
+
                     /** If Sonarqube token was provided, use it for authorization */
                     params.sonarqubeToken?.let { envToken ->
                         token = envToken
@@ -308,7 +322,7 @@ class AndroidAnalyzer : Plugin<Project> {
                             .post(revokeBody)
                             .build()
 
-                    okHttpClient(null).newCall(revokeRequest).execute().close()
+                    passwordOkHttpClient().newCall(revokeRequest).execute().close()
 
                     val body = FormBody.Builder()
                             .add("name", TokenName)
@@ -319,7 +333,7 @@ class AndroidAnalyzer : Plugin<Project> {
                             .post(body)
                             .build()
 
-                    val response = okHttpClient().newCall(request).execute()
+                    val response = passwordOkHttpClient().newCall(request).execute()
 
                     if (response.isSuccessful) {
                         token = response.extractToken()
@@ -384,7 +398,9 @@ class AndroidAnalyzer : Plugin<Project> {
                             props.property("sonar.projectVersion", params.projectVersion)
 
                             // server settings
-                            props.property("sonar.login", token)
+                            if (params.sonarqubeAuth) {
+                                props.property("sonar.login", token)
+                            }
                             props.property("sonar.host.url", params.serverUrl)
 
                             // analysis exclusion settings
@@ -459,10 +475,14 @@ class AndroidAnalyzer : Plugin<Project> {
 
                         val request = Request.Builder()
                                 .url(url)
-                                .authenticated(token)
+                                .apply {
+                                    if (params.sonarqubeAuth) {
+                                        authenticated(token)
+                                    }
+                                }
                                 .build()
 
-                        val client = OkHttpClient().newBuilder().build()
+                        val client = unauthenticatedOkHttpClient()
 
                         return client.execute(request, "Could not extract analysis id with buildString: $buildString") {
                             extractAnalysisId(buildString)
@@ -472,10 +492,14 @@ class AndroidAnalyzer : Plugin<Project> {
                     fun isQualityGateSuccessful(analysisId: String): Boolean {
                         val request = Request.Builder()
                                 .url("${params.serverUrl}/api/qualitygates/project_status?analysisId=$analysisId")
-                                .authenticated(token)
+                                .apply {
+                                    if (params.sonarqubeAuth) {
+                                        authenticated(token)
+                                    }
+                                }
                                 .build()
 
-                        val client = OkHttpClient().newBuilder().build()
+                        val client = unauthenticatedOkHttpClient()
 
                         return client.execute(request, "Could not retrieve analysis by id: $analysisId") {
                             extractAnalysisQualityGateStatus()
@@ -580,13 +604,17 @@ class AndroidAnalyzer : Plugin<Project> {
         }
     }
 
-    private fun okHttpClient(token: String? = null) =
+    private fun unauthenticatedOkHttpClient() = OkHttpClient.Builder().build()
+
+    private fun passwordOkHttpClient() =
             OkHttpClient.Builder().authenticator { _, response ->
-                val username = token ?: params.sonarqubeUsername
-                val password = token?.let { "" } ?: params.sonarqubePassword
+                val credentials = Credentials.basic(params.sonarqubeUsername, params.sonarqubePassword)
+                response.request().newBuilder().header("Authorization", credentials).build()
+            }.build()
 
-                val credentials = Credentials.basic(username, password)
-
+    private fun tokenOkHttpClient(token: String) =
+            OkHttpClient.Builder().authenticator { _, response ->
+                val credentials = Credentials.basic(token, "")
                 response.request().newBuilder().header("Authorization", credentials).build()
             }.build()
 

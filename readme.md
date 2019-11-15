@@ -50,7 +50,7 @@ buildScript {
     }
     dependencies {
         ..
-        classpath "com.justpinch:androidanalyzer:1.3.3"
+        classpath "com.justpinch:androidanalyzer:1.4.0"
     }
 }
 ```
@@ -77,6 +77,7 @@ androidAnalyzer {
     buildVariant = 'debug'
     buildBreaker = true
     sonarqubeGitBranches = true // only works with a paid license
+    sonarqubeAuth = false // in case you don't need Sonarqube authorization
 }
 ```
 
@@ -101,6 +102,12 @@ set `sonarqubeGitBranches = true` as per example above. It can also be configure
 
 If you want your gradle build to fail if a Sonarqube quality gate does not pass, use `buildBreaker = true` 
 as per the example above.
+
+-----------------------------------------------------------
+
+If you are not using Sonarqube users, you should disable authorization by setting `sonarqubeAuth = false`.
+In this case, you most likely want the project to be public too, which can be achieved by setting 
+`projectVibility = 'public'`.
 
 -----------------------------------------------------------
 
@@ -158,6 +165,7 @@ Below is a list of available properties with corresponding descriptions.
 | sonarqubeUsername     | String        | admin                   | Sonarqube username. Prefer environment variables over this method for better security. |
 | sonarqubePassword     | String        | admin                   | Sonarqube password. Prefer environment variables over this method for better security. |
 | sonarqubeToken        | String        | null                    | Sonarqube token. Prefer environment variables over this method for better security. |
+| sonarqubeAuth         | Boolean       | true                    | Sonarqube authorization feature toggle. When true, the plugin tries to authorize using the provided credentials. When false, no authorization is performed.
 | sonarqubeGitBranches  | Boolean       | false                   | Sonarqube git branch analysis feature toggle for paid licenses. Prefer environment variables over this method in multi-module projects. |
 | buildBreaker          | Boolean       | false                   | Fail gradle build if a Sonarqube quality gate does not pass. |
 | buildBreakerTimeout   | Integer       | 180                     | Build breaker timeout in seconds. This is the maximum allowed time for the plugin to poll the Sonarqube Web API for analysis results. |
@@ -230,6 +238,10 @@ Possible values are "true" and "false". If the variable is set to "true", the pl
 
 ## Changelog
 
+#### Version 1.4.0 - November 15, 2019
+Added an option for no Sonarqube authorization.
+
+-----------------------------------------------------------
 #### Version 1.3.3 - October 16, 2019
 Added a license.
 
