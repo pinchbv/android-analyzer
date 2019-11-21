@@ -92,6 +92,7 @@ and `buildVariant` properties.
 If you want advanced Kotlin code analysis using Detekt, you must set `detekt = true` as per the example above.
 Please note that this will generate a configuration file (default name `detekt-config.yml`) in the root folder 
 of your application.
+Make sure that your version of Sonarqube supports Detekt (6.7.7+).
 
 -----------------------------------------------------------
 
