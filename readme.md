@@ -50,7 +50,7 @@ buildScript {
     }
     dependencies {
         ..
-        classpath "com.justpinch:androidanalyzer:1.4.0"
+        classpath "com.justpinch:androidanalyzer:1.4.1"
     }
 }
 ```
@@ -69,6 +69,7 @@ androidAnalyzer {
 // setup with more features
 androidAnalyzer {
     applicationId = 'com.konarskirob.androidsonar'
+    projectKeySuffix = '-android'
     projectName = 'Android Analyzer Example App'
     projectVersion = '0.9.0'
     detekt = true
@@ -144,13 +145,14 @@ Below is a list of available properties with corresponding descriptions.
 
 | property              | type          | default value           | description |
 | :-------------------- | :------------ | :---------------------- | :---------- |
-| applicationId         | String        | null                    | Unique Android application ID used in Sonarqube project key generation. E.g. and application ID of `my.project` will result in the following Sonarqube project key: `my.project-android`. |
+| applicationId         | String        | null                    | Unique Android application ID used in Sonarqube project key generation. E.g. and application ID of `my.project` will result in the following Sonarqube project key: `my.project${projectIdSuffix}`. |
 | projectName           | String        | null                    | Sonarqube project display name. Will not be overwritten if project is already present. |
 
 ##### Optional
 
 | property              | type          | default value           | description |
 | :-------------------- | :------------ | :---------------------- | :---------- |
+| projectKeySuffix      | String        | -android                | Suffix applied to `applicationId` for generating a Sonarqube project key. |
 | projectVersion        | String        | undefined               | Sonarqube display project version. Typically same as app's `versionName`. |
 | projectVisibility     | String        | private                 | Sonarqube project visibility. Can be `public` or `private`. Will not be overwritten if project is already present. |
 | detekt                | Boolean       | false                   | Toggle Kotlin code analysis with Detekt. This will generate a configuration file and place it in the application directory. To see how a default configuration file looks like, run `./gradlew androidAnalyzerDefaultDetektConfig`. |
@@ -165,7 +167,7 @@ Below is a list of available properties with corresponding descriptions.
 | sonarqubeUsername     | String        | admin                   | Sonarqube username. Prefer environment variables over this method for better security. |
 | sonarqubePassword     | String        | admin                   | Sonarqube password. Prefer environment variables over this method for better security. |
 | sonarqubeToken        | String        | null                    | Sonarqube token. Prefer environment variables over this method for better security. |
-| sonarqubeAuth         | Boolean       | true                    | Sonarqube authorization feature toggle. When true, the plugin tries to authorize using the provided credentials. When false, no authorization is performed.
+| sonarqubeAuth         | Boolean       | true                    | Sonarqube authorization feature toggle. When true, the plugin tries to authorize using the provided credentials. When false, no authorization is performed. |
 | sonarqubeGitBranches  | Boolean       | false                   | Sonarqube git branch analysis feature toggle for paid licenses. Prefer environment variables over this method in multi-module projects. |
 | buildBreaker          | Boolean       | false                   | Fail gradle build if a Sonarqube quality gate does not pass. |
 | buildBreakerTimeout   | Integer       | 180                     | Build breaker timeout in seconds. This is the maximum allowed time for the plugin to poll the Sonarqube Web API for analysis results. |
@@ -237,6 +239,11 @@ Possible values are "true" and "false". If the variable is set to "true", the pl
 
 
 ## Changelog
+
+#### Version 1.4.1 - November 21, 2019
+Added a way to customize Sonarqube project key suffix.
+
+-----------------------------------------------------------
 
 #### Version 1.4.0 - November 15, 2019
 Added an option for no Sonarqube authorization.
