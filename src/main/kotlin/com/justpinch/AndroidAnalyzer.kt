@@ -18,6 +18,7 @@ open class Params {
     lateinit var applicationId: String
     lateinit var projectName: String
 
+    var projectKeySuffix = Default.projectKeySuffix
     var projectVersion = Default.projectVersion
     var projectVisibility = Default.projectVisibility
 
@@ -57,7 +58,7 @@ open class Params {
     var buildVariant: String? = null
 
     val projectKey: String
-        get() = "$applicationId-android"
+        get() = "$applicationId$projectKeySuffix"
 
     val testBuildFlavor: String
         get() = "test${buildVariant?.capitalize()}UnitTest"
@@ -129,6 +130,11 @@ open class Params {
          * When set to false, the plugin will not try to authorize in any way.
          */
         private const val sonarqubeAuth = true
+
+        /**
+         * Default Sonarqube project version
+         */
+        private const val projectKeySuffix = "-android"
 
         /**
          * Default Sonarqube project version
