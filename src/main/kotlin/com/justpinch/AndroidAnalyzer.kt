@@ -377,9 +377,9 @@ class AndroidAnalyzer : Plugin<Project> {
                         it.exclude(params.exclusions)
                     }
 
-                    it.classDirectories = proj.files(javaClassDirs, kotlinClassDirs)
-                    it.sourceDirectories = proj.files(params.sourceDirs)
-                    it.executionData = proj.files(params.testJacocoReportsPath)
+                    it.setClassDirectories(proj.files(javaClassDirs, kotlinClassDirs))
+                    it.setSourceDirectories(proj.files(params.sourceDirs))
+                    it.executionData(proj.files(params.testJacocoReportsPath))
 
                     it.doLast { task ->
                         (task as JacocoReport).generate()

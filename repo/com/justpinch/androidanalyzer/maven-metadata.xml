@@ -3,7 +3,7 @@
   <groupId>com.justpinch</groupId>
   <artifactId>androidanalyzer</artifactId>
   <versioning>
-    <release>1.4.1</release>
+    <release>1.5.0</release>
     <versions>
       <version>1.1.0</version>
       <version>1.1.1</version>
@@ -19,7 +19,8 @@
       <version>1.3.3</version>
       <version>1.4.0</version>
       <version>1.4.1</version>
+      <version>1.5.0</version>
     </versions>
-    <lastUpdated>20191121090130</lastUpdated>
+    <lastUpdated>20191205205745</lastUpdated>
   </versioning>
 </metadata>
